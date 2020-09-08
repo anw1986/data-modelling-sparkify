@@ -7,37 +7,45 @@ from sql_queries import *
 
 def process_song_file(cur, filepath):
     # open song file
-    df = 
+    df = pd.read_json(filepath, lines=True)
 
     # insert song record
-    song_data = 
+    columns=['song_id','title','artist_id','year','duration']
+    song_data = df[columns].values[0]
     cur.execute(song_table_insert, song_data)
     
     # insert artist record
-    artist_data = 
+    columns_artists=['artist_id','artist_name','artist_location','artist_latitude','artist_longitude']
+    artist_data = df[columns_artists].values[0]
     cur.execute(artist_table_insert, artist_data)
 
 
 def process_log_file(cur, filepath):
     # open log file
-    df = 
+    df = pd.read_json(filepath, lines=True)
 
     # filter by NextSong action
-    df = 
+    df = df[df['page'] == 'NextSong']
 
     # convert timestamp column to datetime
-    t = 
+    t = pd.to_datetime(df['ts'],unit='ms')
     
     # insert time data records
-    time_data = 
-    column_labels = 
-    time_df = 
+    time_data = (t,t.dt.hour,t.dt.day,t.dt.weekofyear,t.dt.month,t.dt.year,t.dt.weekday)
+    column_labels = ('timestamp', 'hour', 'day', 'week of year', 'month', 'year', 'weekday')
+    
+    test_dict=[]
+    for index,label in enumerate(column_labels) :
+        test_dict.append((column_labels[index],time_data[index]))
+    test_dict_tupple=tuple(test_dict)
+
+    time_df=pd.DataFrame(dict(test_dict_tupple)) 
 
     for i, row in time_df.iterrows():
         cur.execute(time_table_insert, list(row))
 
     # load user table
-    user_df = 
+    user_df = df[['userId','firstName','lastName','gender','level']]
 
     # insert user records
     for i, row in user_df.iterrows():
@@ -51,12 +59,13 @@ def process_log_file(cur, filepath):
         results = cur.fetchone()
         
         if results:
-            songid, artistid = results
+            #unpack tuples
+            songid, artistid, *_ = results
         else:
             songid, artistid = None, None
 
         # insert songplay record
-        songplay_data = 
+        songplay_data = (row.ts,row.userId,row.level,songid,artistid,row.sessionId,row.location,row.userAgent)
         cur.execute(songplay_table_insert, songplay_data)
 
 
