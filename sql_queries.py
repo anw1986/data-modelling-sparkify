@@ -20,7 +20,7 @@ songplay_table_create = ('CREATE TABLE IF NOT EXISTS songplays \
                         user_agent VARCHAR);')
 
 user_table_create = ('CREATE TABLE IF NOT EXISTS users \
-                        (user_id INT, \
+                        (user_id INT PRIMARY KEY, \
                         first_name VARCHAR, \
                         last_name VARCHAR, \
                         gender VARCHAR, \
@@ -58,6 +58,8 @@ VALUES(%s, %s, %s, %s, %s, %s, %s, %s)
 
 user_table_insert = ("""INSERT INTO users (user_id,first_name,last_name,gender,level)
                         VALUES (%s, %s, %s,%s,%s)
+                        ON CONFLICT (user_id) DO UPDATE
+                        SET level=excluded.level
 """)
 
 song_table_insert = ("""INSERT INTO songs (song_id,title,artist_id,year,duration)
